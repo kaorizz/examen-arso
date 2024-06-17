@@ -1,0 +1,46 @@
+version: "3.7"
+
+services:
+  cliente:
+    build: ./ExamenMayo-ejercicio2/
+    ports:
+      - "8082:8082"
+    depends_on:
+      - rabbitmq
+  agendas:
+    build: ./ExamenMayo-ejercicio1/
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - rabbitmq
+  rabbitmq: # por defecto, credenciales guest/guest
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - "5672:5672"  # Puerto AMQP
+      - "15672:15672"  # Puerto administración web
+  mongo: 
+    image: mongo:7 # en laboratorio 1.6 utiliza la versión 4.4.29
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+  mongo-express: 
+    image: mongo-express:1.0.2-20
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_BASICAUTH: false
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+    depends_on:
+      - mongo
+volumes:
+  mongo_data:
